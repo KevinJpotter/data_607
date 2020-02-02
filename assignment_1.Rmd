@@ -1,0 +1,59 @@
+---
+title: "assignment_1"
+output: html_document
+---
+### Kevin Potter
+#### *February 2, 2020*
+
+### **Introduction**
+
+Link to the dataset: https://github.com/fivethirtyeight/data/blob/master/nba-draymond/draymond.csv  
+Link to the data dictionary: https://github.com/fivethirtyeight/data/blob/master/nba-draymond/README.md
+
+This dataset looks at an alternative way to evaluate the production from a defensive player. It aims to look at the space created between a player and the person he is guarding. In the new era of high scoring basketball it quickly being adopted as a worthy metric for evaluation. The information provided in this dataset is number of possessions played and the DRAYNOND rating for each player in the NBA since 2014. The DRAYMOND rating can be +/- based on the league average. 
+
+### Import / Load Data
+The below cell are for the purpose of loading the appropriate libraries, data and converting the data into a dataframe.
+```{r}
+ #load libraries
+library(RCurl)
+
+# load in the dataset for github repo
+csv_dl <- getURL('https://raw.githubusercontent.com/fivethirtyeight/data/master/nba-draymond/draymond.csv')
+# convert to dataframe
+df <- read.csv( text = csv_dl)
+# print first 5 rows
+head(df)
+```
+### Exploratory Data Analysis
+
+The below are an introductory look into the data. The last cell creates a subset of the data containing only scores for the year 2014 and looks at summary statistics of DRAYMOND for that year.
+```{r}
+# summary statistics of the DRAYMOND column
+summary(df$DRAYMOND) 
+```
+
+```{r}
+# plots a histogram of DRAYMOND
+hist(df$DRAYMOND,
+     breaks = 10,
+     xlab = 'DRAYMOND', 
+     main =  'Distribution of DRAYMOND')
+```
+
+
+```{r}
+# creates a new df of 
+df_2014 <- subset(df, season == 2014)
+# print summary stats of subset
+summary(df_2014$DRAYMOND)
+```
+
+### **Conclusion**
+
+In conclusion I might look to add additional stats from the same season and see how the DRAYMOND score related to other statistics like steals or block. I might also look into grouping the stats as a team and see if it could be used to predict points allowed per game.
+
+
+.
+
+
