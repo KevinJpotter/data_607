@@ -1,0 +1,23 @@
+---
+title: "assignment_2"
+output: html_document
+---
+
+### Summary
+
+This code loads in the csv that was created by my tables in MySQL Workbench. All daga can be found in the repo. The reason for the three tables was to deal with the problem of missing data and normalize the tables.
+
+```{r setup}
+rating_df <- read.csv(file="/Users/kevinpotter/Documents/spring_2020_ms/data_607/data/ratings.csv",
+sep=";")
+movie_df <- read.csv(file="/Users/kevinpotter/Documents/spring_2020_ms/data_607/data/movies.csv",
+sep=";")
+friends_df <- read.csv(file="/Users/kevinpotter/Documents/spring_2020_ms/data_607/data/ratings.csv",
+sep=";")
+
+head(rating_df)
+head(movie_df)
+head(friends_df)
+```
+
+                 
