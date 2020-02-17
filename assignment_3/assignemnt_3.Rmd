@@ -3,12 +3,12 @@ title: "assignment_3"
 output: html_document
 ---
 
-## R Markdown
 
+
+## Question 1
 ```{r}
 library(RCurl)
 library(dplyr)
-library(stringr)
 
 data <- getURL('https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv')
 df <- read.csv(text = data)[2]
@@ -17,19 +17,47 @@ df_2 <- unlist(strsplit(data, ","))
 grep(pattern = 'data|statistics', df_2, value = TRUE, ignore.case = TRUE)
 ```
 
-# Question 
+## Question 2
 ```{r}
+library(stringr)
 data_2 <- readLines("data.txt")
-unlist(str_extract_all(data_2, "[[:alpha:] ]{2,}"))
+data_2 <- unlist(str_extract_all(data_2, "[[:alpha:] ]{2,}"))
+data_2 <- trimws(data_2, which = c("both", "left", "right"), whitespace = "[ \t\r\n]")
+stri_remove_empty(data_2, na_empty = FALSE)
 ```
-### Question 4
+## Question 3
 
-a = "(.)\1\1"
+a = "(.)\1\1"  
 
-b = "(.)(.)\\2\\1"
+This looks for strings where three letters reapeat themselves consecutively in PCRE but will not work in POSIX without another backslash.  
 
-c = "(..)\1"
+b = "(.)(.)\\2\\1"  
 
-d = "(.).\\1.\\1"
+This code pulls out groups of 4 letter palendromes (soos = TRUE, 1221 = TRUE) in the POSIX editor. 
+
+c = "(..)\1"  
+
+Find groups of two letter that repeat themselves consecutively in PCRE but not work in POSIX withour another backslash.  
+
+d = "(.).\\1.\\1"  
+
+This extract a group of 5 chacters where at least the first, second, third, and fifth letter are all the same in POSIX. (ooomo = TRUE)
 
 e = "(.)(.)(.).*\\3\\2\\1"
+
+The core code finds a 7 level palendrome similar to the problem in (b) The middle chacter can be anything and not limited to letters. In this case the * designates there can be any number of chacters that occor in between. (racecar = TRUE, race hsdk234 car = TRUE) 
+
+
+## Question 4
+
+```{r}
+test <- c('g33ogh', 'mohomsdjfj', 'doodomjj moom  doodomjj moo', 'jddj', 'abc     cba', 'dddwddd', 'racecar')
+str_extract(test, '^\\w') == str_extract(test, '\\w$')
+str_extract_all(test, '(\\w).*\\1.*\\1')
+str_extract_all('chruch','(..).*\\1')
+```
+
+
+
+
+
