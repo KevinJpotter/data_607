@@ -1,0 +1,35 @@
+---
+title: "assignment_3"
+output: html_document
+---
+
+## R Markdown
+
+```{r}
+library(RCurl)
+library(dplyr)
+library(stringr)
+
+data <- getURL('https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv')
+df <- read.csv(text = data)[2]
+filter(df, grepl('DATA|STATISTICS', Major))
+df_2 <- unlist(strsplit(data, ","))
+grep(pattern = 'data|statistics', df_2, value = TRUE, ignore.case = TRUE)
+```
+
+# Question 
+```{r}
+data_2 <- readLines("data.txt")
+unlist(str_extract_all(data_2, "[[:alpha:] ]{2,}"))
+```
+### Question 4
+
+a = "(.)\1\1"
+
+b = "(.)(.)\\2\\1"
+
+c = "(..)\1"
+
+d = "(.).\\1.\\1"
+
+e = "(.)(.)(.).*\\3\\2\\1"
