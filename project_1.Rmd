@@ -1,0 +1,101 @@
+---
+title: "Kevin Potter: Project 1"
+output: html_document
+---
+
+## Introduction
+
+The below cells read in a .txt file, clean data, perform some calculations and display results as a dataframe. The data set used is information on a chess tournament that includes name of player, location, rank before and after the tournament, and information on each match.    
+
+#### Step 1
+
+Load data into rows and and create two lists of information. The first contains the id, name, points, and round information. The second line contains the state, pre-rank, and post-rank information. By selecting only every third row the borders are a non factor.
+```{r}
+raw_text <- readLines(con = '/Users/kevinpotter/Documents/spring_2020_ms/data_607/project_1/tournamentinfo.txt')
+line_1 <- raw_text[seq(5, length(raw_text), by = 3)]
+line_1[1]
+```
+
+
+```{r}
+line_2 <- raw_text[seq(6, length(raw_text), by = 3)]
+line_2[1]
+```
+
+#### Step 2
+
+Split the information in line_1 and line_2 into individual long vectors on the pipe "|" character. Then pull out the player_name, total_points, and state into separate lists using the seq package. Convert the total_points vector to a float and combine the three vectors into one dataframe. Get rid of the whitespace after the player_id using trimws.
+```{r}
+vect_1 <- unlist(strsplit(line_1, '[|]'))
+vect_2 <- unlist(strsplit(line_2, '[|]'))
+
+player_name <- vect_1[seq(2, length(vect_1), by = 10)]
+player_name <- trimws(player_name, which = c("right"), whitespace = "[ \t\r\n]")
+total_points <- as.numeric(vect_1[seq(3, length(vect_1), by = 10)])
+state <- vect_2[seq(1, length(vect_2), by = 10)]
+
+df <- data.frame(player_name, state, total_points)
+head(df)
+```
+
+
+#### Step 3 
+
+Create a column for the rank of the player prior to the competition and state. To do this I split the information in line_2 on the pipe | again like in step 1 and create two vectors. One contains the state and the other contains the pre and post ranking information for the player. I used gsub to clean and isolate the pre rank score and convert it to an integer. Finally I add the two columns into the dataframe.
+```{r}
+pre_rank <- vect_2[seq(2, length(vect_2), by = 10)]
+pre_rank <- as.integer(gsub("-.*|.*:|P.*","",pre_rank))
+df$pre_rank <- pre_rank
+head(df)
+```
+
+
+#### Step 4
+
+Create a column that is an average of the pre-ranks of players that were faced during the tournament. To do this I create a long vector that contains only the player_id of the players faced. NA's are used in place of players that did not play 7 games and convert the rest to integers. I then create a list of vectors that contain 7 elements for each player. This list is the id’s of the players faced during the tournament.  I use this id to retrieve pre_rank value from the df created above. The index values of the dataframe are the same as the player_id. Special consideration is made to use the NA's as placeholders but remove them when computing the average. 
+
+```{r}
+# create the list oponent
+all_games <- vect_1[-seq(1, length(vect_1), by = 10)] 
+all_games <- all_games[-seq(1, length(vect_1), by = 9)]
+all_games <- all_games[-seq(1, length(vect_1), by = 8)]
+all_games <- gsub("[^0-9]", "", all_games)
+all_games <- as.integer(all_games)
+
+# make a list of all oponents for each player
+opponents_by_player <- list()
+n = 1
+for (i in 1:64) {
+  opponents_by_player[[i]] <- all_games[(n:(n+6))]
+  n = n + 5
+}
+
+# look at player 15-19 (to show NA's)
+opponents_by_player[15:19]
+```
+
+
+```{r}
+# create an empty vector to store average opponenent rank
+avg_opponent <- vector()
+
+# loop through list of vecotrs
+for (i in (1:(length(opponents_by_player)))){
+  opponent_rank <- vector()
+  
+  # nested loop to loop over non null values for each player
+  for (n in (1:(length(opponents_by_player[[i]][!is.na(opponents_by_player[[i]])])))){
+    
+    # remove null values from list of opponents
+    opponent_id_list <- opponents_by_player[[i]][!is.na(opponents_by_player[[i]])]
+    
+    rank <- df$pre_rank[opponent_id_list[n]]
+    opponent_rank[n] <- rank
+  }
+  avg_opponent[i] <- mean(opponent_rank)
+}
+
+# add to dataframe
+df$avg_opponent <- as.integer(avg_opponent)
+head(df)
+```
