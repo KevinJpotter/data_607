@@ -1,0 +1,115 @@
+---
+title: "Kevin Potter: assignment_4"
+output: html_document
+---
+
+##Introduction
+
+This notebook is for the use of cleaning and organizing flight information for AM West and Alaska airlines. The data shows the number of flights that were on time and delayed for 5 major airports. The time frame  and whether or not eh flights are incoming or outbound was not provided.
+
+
+### Load Data
+
+Load data into a data frame for modeling and visualization. A minor amount of cleaning needed to be done before visualization. 
+
+```{r}
+library(RCurl)
+library(dplyr)
+
+
+data <- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/flights%20sample%20-%20data%20606%20-%20Sheet1.csv')
+df <- read.csv( text = data)
+
+# rename columns
+df <- rename(df,  airline = X)
+df <- rename(df,  status = X.1)
+
+# drop rows with null values
+df<- na.omit(df)
+
+# Fill in missing data
+df[2,1] <- 'ALASKA'
+df[4,1] <- 'AM WEST'
+
+# convert numeric data
+df$Phoenix<- as.integer(df$Phoenix)
+df$Seattle <- as.integer(df$Seattle)
+
+# look at data
+head(df)
+```
+
+
+
+## Plot Data 
+
+Create bar-plots to compare draw comparisons about the delayed and on time flights for the airports and airlines.
+
+
+```{r}
+delayed <- subset(df, status == 'delayed')[,3:7]
+barplot(t(delayed), 
+        main = 'Delayed Flights',
+        ylab = 'Flights',
+        xlab = 'Airline',
+        names.arg = c('ALASKA', 'AM West'),
+        legend = c('LA', "Phoenix", 'Sand Diego',"SF", "Seattle"),
+        beside = TRUE,
+        col = rainbow(5)
+        )
+```
+
+```{r}
+on_time <- subset(df, status == 'on time')[,3:7]
+barplot(t(on_time), 
+        main = 'On Time Flights',
+        ylab = 'Flights',
+         xlab = 'Airline',
+        names.arg = c('ALASKA', 'AM West'),
+        legend = c('LA', "Phoenix", 'Sand Diego',"SF", "Seattle"),
+        beside = TRUE,
+        col = rainbow(5)
+        )
+```
+```{r}
+am_west <- subset(df, airline == 'AM WEST')[,3:7]
+barplot(t(am_west), 
+        main = 'AM WestFlights',
+        ylab = 'Flights',
+        xlab = 'Status',
+        names.arg = c('On Time', 'Delayed'),
+        legend = c('LA', "Phoenix", 'Sand Diego',"SF", "Seattle"),
+        beside = TRUE,
+        col = rainbow(5)
+        )
+```
+
+```{r}
+alaska <- subset(df, airline == 'ALASKA')[,3:7]
+barplot(t(alaska), 
+        main = 'Alaska Flights',
+        ylab = 'Flights',
+        xlab = 'Status',
+        names.arg = c('On Time', 'Delayed'),
+        legend = c('LA', "Phoenix", 'Sand Diego',"SF", "Seattle"),
+        beside = TRUE,
+        col = rainbow(5)
+        )
+```
+### Further Exploratory Data Analysis 
+
+Look at the % of delated flights per airport to draw further conclusions.
+
+```{r}
+# % delayed flights for Alaska airline per airport
+print(alaska[2,]/ sum(alaska)*100)
+
+# % of delated flights for AM West airline per airport
+print(am_west[2,]/ sum(am_west)*100)
+```
+
+### Conclusion
+
+After looking over the data it appears each airline has problems with delayed flights on different airports. Alaska airline has the most % of delated flights in Seattle where AM West has the highest % of delated flights in Phoenix. These airports are where the most flights are from for both airports. This would leave me to believe the biggest cause for delay is the airline getting planes in out and ready rather than the airport not working efficiently. 
+
+What I would assume to be larger airports LA and SF seem to have a slightly higher % of delays with not a large number of flights for the airline which could mean it is an issue with the airport.
