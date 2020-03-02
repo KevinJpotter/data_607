@@ -373,14 +373,6 @@ summary {
 <p>Load data into a data frame for modeling and visualization. A minor amount of cleaning needed to be done before visualization.</p>
 <pre class="r"><code>library(RCurl)
 library(dplyr)</code></pre>
-<pre><code>## 
-## Attaching package: 'dplyr'</code></pre>
-<pre><code>## The following objects are masked from 'package:stats':
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union</code></pre>
 <pre class="r"><code>data &lt;- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/flights%20sample%20-%20data%20606%20-%20Sheet1.csv')
 df &lt;- read.csv( text = data)
 

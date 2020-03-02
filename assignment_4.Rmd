@@ -12,9 +12,13 @@ This notebook is for the use of cleaning and organizing flight information for A
 
 Load data into a data frame for modeling and visualization. A minor amount of cleaning needed to be done before visualization. 
 
-```{r}
+```{r, warning = FALSE, results='hide', message=FALSE}
 library(RCurl)
 library(dplyr)
+```
+
+
+```{r}
 
 
 data <- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/flights%20sample%20-%20data%20606%20-%20Sheet1.csv')
