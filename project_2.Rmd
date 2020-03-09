@@ -2,3 +2,75 @@
 title: "project_2"
 output: html_document
 ---
+
+
+
+## Introduction
+
+This notebook gathers and organzies data from three data sets witht he aim of transofrming the data from a wide dataset to a long dataset.
+
+
+```{r, warning = FALSE, results='hide', message=FALSE}
+library(RCurl)
+library(tidyr)
+library(dplyr)
+library(data.table)
+```
+
+## Dataset #1 climate data
+
+Link: https://www.usclimatedata.com/
+
+The climate data looks are tempeatures over the course of a year in NY. 
+
+```{r}
+
+climate_data<- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/ny_climate%20.csv')
+climate_1 <- read.csv( text = climate_data, nrows=4)
+climate_2 <- read.csv(text = climate_data, skip = 6)
+
+climate <- merge(climate_1,climate_2, by = 'X')
+
+# transpose
+t_climate <- as.data.frame(t(climate)[-1,])
+names(t_climate) <- climate[,1]
+rownames(t_climate) <- 1:nrow(t_climate)
+t_climate$month <- names(climate)[-1]
+```
+
+## Dataset #2 Commuter data
+
+Link: https://github.com/chitrarth2018/607-Project-2/blob/master/mbta.xlsx
+
+The data is from MBTA and relates to the ridership across different modes of transportation in Boston. The data can be used to analyze if there is a time based trend in the ridership numbers across different modes of transport.
+
+
+```{r}
+commute_data <- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/mbta.csv')
+commute <- read.csv( text = commute_data, header = TRUE, check.names = F)
+
+
+t_commute <- as.data.frame(t(commute)[-1,])
+names(t_commute) <- commute[,1]
+rownames(t_commute) <- 1:nrow(t_commute)
+t_commute$date <- names(commute)[-1]
+t_commute <- select(t_commute, -c(1))
+```
+
+## Dataset #3 Military Planes
+
+Link: https://www.ibiblio.org/hyperwar/AAF/StatDigest/aafsd-3.html
+
+The below data are for the manufaucting of military planes, going through the type and location of the planes. 
+
+```{r}
+military_data <- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/military_airplanes.csv')
+military <- read.csv( text = military_data, check.names=F)
+
+t_military <- as.data.frame(t(military)[-1,])
+names(t_military) <- military[,1]
+rownames(t_military) <- 1:nrow(t_military)
+t_military$date <- names(military)[-1]
+t_military <- t_military[,colSums(is.na(t_military))<nrow(t_military)]
+```
+
