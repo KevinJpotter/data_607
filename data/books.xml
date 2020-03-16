@@ -1,18 +1,21 @@
-<item>
-  <field name="author">Douglas Adams</field>
-  <field name="genre">sci-fi</field>
-  <field name="title">The Hitchhiker's Guide to the Galaxy</field>
-  <field name="year_published">1979</field>
-</item>
-<item>
-  <field name="author">Kim Stanley Robinson</field>
-  <field name="genre">sci-fi</field>
-  <field name="title">Aurora</field>
-  <field name="year_published">2015</field>
-</item>
-<item>
-  <field name="author">Stephen King, Peter Straub</field>
-  <field name="genre">sci-fi</field>
-  <field name="title">The Talisman</field>
-  <field name="year_published">1984</field>
-</item>
+<?xml version="1.0" encoding="UTF-8"?>
+<table>
+  <item>
+    <field name="author">Douglas Adams</field>
+    <field name="genre">sci-fi</field>
+    <field name="title">The Hitchhiker's Guide to the Galaxy</field>
+    <field name="year_published">1979</field>
+  </item>
+  <item>
+    <field name="author">Kim Stanley Robinson</field>
+    <field name="genre">sci-fi</field>
+    <field name="title">Aurora</field>
+    <field name="year_published">2015</field>
+  </item>
+  <item>
+    <field name="author">Stephen King, Peter Straub</field>
+    <field name="genre">sci-fi</field>
+    <field name="title">The Talisman</field>
+    <field name="year_published">1984</field>
+  </item>
+</table>
