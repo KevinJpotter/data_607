@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="generator" content=
+"HTML Tidy for Mac OS X (vers 31 October 2006 - Apple Inc. build 16.4), see www.w3.org" />
+<title></title>
+</head>
+<body>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>author</th>
+<th>genre</th>
+<th>title</th>
+<th>year_published</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>Douglas Adams</td>
+<td>sci-fi</td>
+<td>The Hitchhiker's Guide to the Galaxy</td>
+<td>1979</td>
+</tr>
+<tr>
+<th>1</th>
+<td>Kim Stanley Robinson</td>
+<td>sci-fi</td>
+<td>Aurora</td>
+<td>2015</td>
+</tr>
+<tr>
+<th>2</th>
+<td>Stephen King, Peter Straub</td>
+<td>sci-fi</td>
+<td>The Talisman</td>
+<td>1984</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
