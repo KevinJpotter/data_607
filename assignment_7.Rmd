@@ -1,0 +1,46 @@
+---
+title: "assignment_7"
+output: html_document
+---
+
+## Introduction
+
+This noteboook is for the purpose of reading in three diffeent file type an .xml, .json, and .html table and converting them into a dataframe. 
+
+### Convert JSON file to a Data Frame
+```{r,  tidy = TRUE, message= FALSE}
+library(jsonlite)
+json_file <- "https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/books.json"
+json_df = fromJSON(json_file)
+json_df
+```
+
+### Convert HTML file to a Data Frame
+```{r,  tidy = TRUE, message= FALSE}
+library(rvest)
+library(RCurl)
+text <- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/books.html')
+html_df <- as.data.frame(read_html(text) %>% html_table(fill=TRUE))
+html_df
+```
+
+
+### Convert XML file to a Data Frame
+```{r,  tidy = TRUE, message= FALSE}
+library(XML)
+library(dplyr)
+
+data <- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/books2.xml')
+doc <- xmlParse(data)
+xml_df = xmlToDataFrame(doc, stringsAsFactors = FALSE,) %>% 
+                        mutate_all(~type.convert(., as.is = T))
+xml_df
+```
+
+
+## Conclusion
+
+Each file type has its own package to work with in R and each work a little differently when loading them in. The all are stored slightly differently so extracting the information can be tricky. In this example the file strictures are very simple but, in large nested files extracting what you want can become difficult.
+
+
+
