@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<books>
+    <book>
+        <author>Douglas Adams</author>
+        <genre>sci-fi</genre>
+        <title>The Hitchhiker's Guide to the Galaxy</title>
+        <year_published>1979</year_published>
+    </book>
+    <book>
+        <author>Kim Stanley Robinson</author>
+        <genre>sci-fi</genre>
+        <title>Aurora</title>
+        <year_published>2015</year_published>
+    </book>
+    <book>
+        <author>Stephen King, Peter Straub</author>
+        <genre>sci-fi</genre>
+        <title>The Talisman</title>
+        <year_published>1984</year_published>
+    </book>
+</books>
