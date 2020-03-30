@@ -1,0 +1,99 @@
+---
+title: "assignment_8_kevin_potter"
+output: html_document
+---
+
+## Load Data 
+
+This notebook loads data in from the NY Times API using the jsonlite packages in R. Getting a personal API key and making sure you have jsonlite installed are prerequisites for using this notebook. 
+
+```{r}
+pacman::p_load(dbplyr, tidyr, magrittr, stringr, udpipe, tm, lattice, tidytext, jsonlite, dplyr)
+
+#this uses the search API
+election <- fromJSON('https://api.nytimes.com/svc/search/v2/articlesearch.json?q=election&api-key=MnxPBpfA2doPVbkRhXJVw0N7YlPjTTaW', flatten =TRUE) %>% data.frame()
+
+space <- fromJSON('https://api.nytimes.com/svc/search/v2/articlesearch.json?q=space&api-key=MnxPBpfA2doPVbkRhXJVw0N7YlPjTTaW', flatten =TRUE) %>% data.frame()
+
+nyc <- fromJSON('https://api.nytimes.com/svc/search/v2/articlesearch.json?q=nyc&api-key=MnxPBpfA2doPVbkRhXJVw0N7YlPjTTaW', flatten =TRUE) %>% data.frame()
+
+names(nyc)
+```
+
+
+
+## Drop Columns
+
+This cell drops columns from the dataframe with more that 25% of the column is null.
+
+
+```{r}
+nyc <- nyc[,!sapply(nyc, function(x) mean(is.na(x)))>0.25]
+space <- space[,!sapply(space, function(x) mean(is.na(x)))>0.25]
+election <- election[,!sapply(election, function(x) mean(is.na(x)))>0.25]
+names(nyc)
+```
+## Article Text Data
+
+Get the three main columns that contain the text of the article. I used snippet instead of firs paragraph because it describes the content better. I did not use both to avoid redundancy. 
+```{r}
+text_nyc <- select(nyc, "response.docs.source",  "response.docs.snippet" , "response.docs.headline.main")
+text_election <- select(election, "response.docs.source",  "response.docs.snippet" , "response.docs.headline.main")
+text_space <- select(space, "response.docs.source",  "response.docs.snippet" , "response.docs.headline.main")
+head(text_space)
+```
+### Remove Stopwords
+
+Get rid of the noise to see the most used words in the dataset.
+
+```{r}
+stopwords_regex = paste(stopwords('en'), collapse = '\\b|\\b')
+stopwords_regex = paste0('\\b', stopwords_regex, '\\b')
+text_space$response.docs.snippet = stringr::str_replace_all(text_space$response.docs.snippet, stopwords_regex, '')
+text_election$response.docs.snippet = stringr::str_replace_all(text_election$response.docs.snippet, stopwords_regex, '')
+text_nyc$response.docs.snippet = stringr::str_replace_all(text_nyc$response.docs.snippet, stopwords_regex, '')
+```
+
+## Visualize Results
+
+```{r}
+# Download model from udpipe
+model <- udpipe_download_model(language = "english")
+udmodel_english <- udpipe_load_model(model)
+```
+
+```{r}
+s <- udpipe_annotate(udmodel_english, text_election$response.docs.snippet)
+x <- data.frame(s)
+stats <- subset(x, upos %in% c("NOUN")) 
+stats <- txt_freq(stats$token)
+stats$key <- factor(stats$key, levels = rev(stats$key))
+barchart(key ~ freq, data = head(stats, 20), col = "cadetblue", 
+         main = "Most Occuring Nouns in Election Articles", xlab = "Freq")
+```
+
+```{r}
+s <- udpipe_annotate(udmodel_english, text_space$response.docs.snippet)
+x <- data.frame(s)
+stats <- subset(x, upos %in% c("NOUN")) 
+stats <- txt_freq(stats$token)
+stats$key <- factor(stats$key, levels = rev(stats$key))
+barchart(key ~ freq, data = head(stats, 20), col = "cadetblue", 
+         main = "Most Occuring Nouns in Space Articles", xlab = "Freq")
+```
+
+
+```{r}
+s <- udpipe_annotate(udmodel_english, text_nyc$response.docs.snippet)
+x <- data.frame(s)
+stats <- subset(x, upos %in% c("NOUN")) 
+stats <- txt_freq(stats$token)
+stats$key <- factor(stats$key, levels = rev(stats$key))
+barchart(key ~ freq, data = head(stats, 20), col = "cadetblue", 
+         main = "Most Occuring Nouns in NYC Articles", xlab = "Freq")
+```
+
+### Conclusion
+
+The results are as I would expect, the results for the most common words that are not stop words are different for each set of articles collected. The most common word for space was space, NYC was people, and election was intelligence. I was surprised not to see anything relative to the virus outbreak in the NYC and election categories. Aside from that the word counts make sense.
+
