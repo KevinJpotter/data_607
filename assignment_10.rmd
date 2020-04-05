@@ -1,0 +1,275 @@
+---
+title: "assignment_10"
+output: html_document
+---
+
+
+# Part 1
+
+Get the code base working from https://www.tidytextmining.com/sentiment.html in and .rmd 
+
+```{r setup, warning=FALSE,message=FALSE,error=FALSE}
+library(tidytext)
+
+get_sentiments("afinn")
+```
+`
+
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+get_sentiments("bing")
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+get_sentiments("nrc")
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, regex("^chapter [\\divxlc]", 
+                                                 ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+
+tidy_books %>%
+  filter(book == "Emma") %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE)
+```
+
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+library(tidyr)
+
+jane_austen_sentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+library(ggplot2)
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+```{r warning=FALSE,error=FALSE}
+pride_prejudice <- tidy_books %>% 
+  filter(book == "Pride & Prejudice")
+
+pride_prejudice
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+afinn <- pride_prejudice %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(index = linenumber %/% 80) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+
+bing_and_nrc <- bind_rows(pride_prejudice %>% 
+                            inner_join(get_sentiments("bing")) %>%
+                            mutate(method = "Bing et al."),
+                          pride_prejudice %>% 
+                            inner_join(get_sentiments("nrc") %>% 
+                                         filter(sentiment %in% c("positive", 
+                                                                 "negative"))) %>%
+                            mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+get_sentiments("nrc") %>% 
+     filter(sentiment %in% c("positive", 
+                             "negative")) %>% 
+  count(sentiment)
+
+get_sentiments("bing") %>% 
+  count(sentiment)
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+bing_word_counts
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE} 
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment",
+       x = NULL) +
+  coord_flip()
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+custom_stop_words <- bind_rows(tibble(word = c("miss"), 
+                                          lexicon = c("custom")), 
+                               stop_words)
+custom_stop_words
+```
+
+
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+library(wordcloud)
+
+tidy_books %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+library(reshape2)
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+PandP_sentences <- tibble(text = prideprejudice) %>% 
+  unnest_tokens(sentence, text, token = "sentences")
+PandP_sentences$sentence[2]
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+austen_chapters <- austen_books() %>%
+  group_by(book) %>%
+  unnest_tokens(chapter, text, token = "regex", 
+                pattern = "Chapter|CHAPTER [\\dIVXLC]") %>%
+  ungroup()
+
+austen_chapters %>% 
+  group_by(book) %>% 
+  summarise(chapters = n())
+```
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+bingnegative <- get_sentiments("bing") %>% 
+  filter(sentiment == "negative")
+
+wordcounts <- tidy_books %>%
+  group_by(book, chapter) %>%
+  summarize(words = n())
+
+tidy_books %>%
+  semi_join(bingnegative) %>%
+  group_by(book, chapter) %>%
+  summarize(negativewords = n()) %>%
+  left_join(wordcounts, by = c("book", "chapter")) %>%
+  mutate(ratio = negativewords/words) %>%
+  filter(chapter != 0) %>%
+  top_n(1) %>%
+  ungroup()
+```
+# Part 2
+
+Read in a a corpus and perform sentiment analysis using another R package. I am going to use the Syuzhet package for R.  
+
+**Data:** Body from an online article found here.  
+https://www.capecodtimes.com/news/20200405/cape-cod-in-uncharted-waters-in-preparations-for-summer-ahead  
+
+
+### Load in data
+
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+library(RCurl)
+library(syuzhet)
+text <- getURL('https://raw.githubusercontent.com/KevinJpotter/data_607/master/data/article.txt')
+sentences <- get_sentences(text)
+```
+
+
+### Visualize Narrative
+
+Plot sentiment score using different methods of evaluation on the same text side by side.
+
+
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+syuzhet_sentiment <- get_sentiment(sentences)
+fig.par <- par(mfrow=c(3, 1))
+plot(
+  syuzhet_sentiment, 
+  type="l", 
+  main="Syuzhet Sentiment Plot", 
+  xlab = "Narrative Time", 
+  ylab= "Sentiment Score"
+  )
+
+bing_sentiment <- get_sentiment(sentences, method = 'bing')
+plot(
+  bing_sentiment, 
+  type="l", 
+  main="Bing Sentiment Plot", 
+  xlab = "Narrative Time", 
+  ylab= "Sentiment Score"
+  )
+
+afinn_sentiment <- get_sentiment(sentences, method = 'afinn')
+plot(
+  afinn_sentiment, 
+  type="l", 
+  main="Afinn Sentiment Plot", 
+  xlab = "Narrative Time", 
+  ylab= "Sentiment Score"
+  )
+
+par(fig.par)
+```
+
+### Scale Data
+
+Plot again on the same graph, this time scale the data first to better compare the difference in the evaluation method. 
+
+
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+scaled_df <- data.frame(scale(bing_sentiment), scale(syuzhet_sentiment), scale(afinn_sentiment))
+colnames(scaled_df) <- c('bing', 'syuzhet', 'afinn')
+plot(scaled_df$bing, type="l", main="Scaled Sentiment Plot", xlab = "Narrative Time",  ylab= "Scaled Sentiment Score" , col='red')
+lines(scaled_df$syuzhet, col ='blue')
+lines(scaled_df$afinn, col = 'green')
+legend('bottomright',c("Bing","Syuzhet", "Afinn"), col=c("red","blue", "green"), lty=1)
+```
+### NRC Data
+
+This cell looks at the NRC data of the article and plots the percentage they appear throughout the article by analyzing each sentence.
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+nrc_data <- get_nrc_sentiment(sentences)
+barplot(
+  sort(colSums(prop.table(nrc_data[, 1:8]))), 
+  horiz = TRUE, 
+  cex.names = 0.7, 
+  las = 1, 
+  main = "Emotions of Article", xlab="Percentage of full Text"
+  )
+```
+
+### Simple Plot
+
+This plot looks at the rolling averages and smoothing lines available in the package to more easily look at sentiment across the life of the text.
+
+```{r  warning=FALSE,message=FALSE,error=FALSE}
+simple_plot(syuzhet_sentiment)
+```
+
+## Conclusion
+
+After scaling the three method's it's easy to see they all follow a general path for judging sentiment in regards to negative and positive. There are very few discrepancies. Over all the text seems to convey trust and anticipation which is promising being as this is from a news outlet. We would hope trust is the number one attribute. The third most prevalent emotion is fear, which is also understandable since the article speaks about coronavirus implications for the summer. I intentionally picked an article that discussed a topic, (summer at the beach) in a negative connotation to see if the analysis picked up on it and i believe it did. 
+
