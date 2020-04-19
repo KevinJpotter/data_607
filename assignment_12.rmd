@@ -1,0 +1,17 @@
+---
+title: "assignment_12"
+output: html_document
+---
+
+
+## 1. Who are your target users?
+
+Hulu's target users are their current subscribers, anyone who uses competing services, and users that may use a lateral service like cable tv. The recommender system can be used to increase engagement with the service to increase customer loyalty and and overall use of the service.
+
+## 2. What are their key goals?
+
+Their key goals are to increase the overall time a customer is using the site by recommending shows that they think they may like. The unique thing about hulu is after you are finish the last episode of a series or movie, the service will automatically start a show of similar genre. This is a differentiator from other similar viewing services like amazon prime and Netflix. 
+
+## 3. How can you help them accomplish their goals?
+
+We could help them to improve their service by rating movies more. If every user rated every show they watched for a week they would have an unbiased representative dataset with individuals ratings. This is something these sites have trouble with is to have a good sample of user ratings. Many people don't often rate shows and with this information it would be able to come up with better recommendations.
