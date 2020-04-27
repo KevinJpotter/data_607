@@ -1,0 +1,121 @@
+---
+title: "project_4"
+output: html_document
+---
+
+## Create Datasets
+
+This code block reads in and parses the emails locally. I included code to download the .tar files, you would need to specify the place where you would want them downloaded, open the file and adjust the file path accordingly.  
+
+
+**Ham Data**
+Create a data-frame with all the text from the ham emails, removing stop-words, characters, and digits as preprocessing. We add a target column for modeling later as a binary feature, 1 = spam, 0 = ham.    
+```{r}
+#download.file(url = "https://github.com/KevinJpotter/data_607/blob/master/data/ham.tar.bz2", destfile = "ham.tar.bz2")
+#download.file(url = "https://github.com/KevinJpotter/data_607/blob/master/data/spam.tar.bz2", destfile = "spam.tar.bz2")
+
+library(stringr)
+library(stopwords)
+
+stopwords_regex <- paste(stopwords('en'), collapse = '\\b|\\b')
+stopwords_regex <-  paste0('\\b', stopwords_regex, '\\b')
+
+filenames <- list.files("/Users/kevinpotter/Documents/spring_2020_ms/data_607/data_607/data/easy_ham/", full.names=TRUE)
+final_text<- vector(mode = "list")
+
+for (file in filenames){
+  conn <- file(file ,open="r")
+  lines <-readLines(conn)
+  raw_text <- paste(lines, collapse = "")
+  clean_text <- str_replace_all(raw_text, "[^[:alnum:]]+", ' ' ) 
+  clean_text <- gsub('[[:digit:]]+', " ", clean_text)
+  clean_text <- str_replace_all(clean_text, stopwords_regex, '')
+  final_text <- append(final_text, clean_text)
+  close(conn)
+}
+
+target <- list(rep(0,2551))
+ham <- data.frame(target)
+colnames(ham) <- c('target')
+ham$final_text <- final_text
+```
+
+
+**Spam Data**
+Create a data-frame with all the text from the spam emails, removing stop-words, characters, and digits as preprocessing. We add a target column for modeling later as a binary feature, 1 = spam, 0 = ham.  
+```{r}
+library(stringr)
+library(stopwords)
+filenames <- list.files("/Users/kevinpotter/Documents/spring_2020_ms/data_607/data_607/data/spam/", full.names=TRUE)
+final_text<- vector(mode = "list")
+for (file in filenames){
+  conn <- file(file ,open="r")
+  lines <-readLines(conn)
+  raw_text <- paste(lines, collapse = "")
+  clean_text <- str_replace_all(raw_text, "[^[:alnum:]]+", ' ' ) 
+  clean_text <- gsub('[[:digit:]]+', " ", clean_text)
+  clean_text <- str_replace_all(clean_text, stopwords_regex, '')
+  final_text <- append(final_text, clean_text)
+  close(conn)
+}
+
+target <- list(rep(1,501))
+spam <- data.frame(target)
+colnames(spam) <- c('target')
+spam$final_text <- final_text
+```
+
+
+**Merged data**
+Merge the tow datasets to one.
+```{r}
+final_df <- rbind(spam, ham)
+```
+
+## Split and Tranform Data
+
+Vectorize the data using the top 15 features for modeling. We then split into a training and test data set and make predictions based on the split.
+```{r}
+library(caret)
+library(superml)
+library(stats)
+library(data.table)
+
+
+# split data but we want to maintain the balence of classes
+trainIndex = createDataPartition(final_df$target,
+                       p=0.7, list=FALSE,times=1)
+
+train = data.table(final_df[trainIndex,])
+test = data.table(final_df[-trainIndex,])
+
+# initialise the class decide featrues and we already removed stop words
+cfv <- CountVectorizer$new(max_features = 15, remove_stopwords = FALSE)
+cfv$fit(train$final_text)
+
+# transform the data
+train_cf_features <- cfv$transform(unlist(train$final_text, use.names=FALSE))
+test_cf_features <- cfv$transform(unlist(test$final_text, use.names=FALSE))
+```
+
+
+## Fit model, make predictions and measure accuracy of the model.
+
+We then use logistic regression to make predictions on wether or not we think the email is spam or ham on the testing set that the model has not seen yet.
+
+```{r}
+logitmod <- glm(train$target~ train_cf_features, family = "binomial")
+pred <- predict(logitmod, newdata = data.table(test_cf_features), type = "response")
+y_pred_num <- ifelse(pred > 0.5, 1, 0)
+y_pred <- factor(y_pred_num, levels=c(0, 1))
+y_act <- test$target
+mean(y_pred == y_act)
+```
+
+## Conclustion 
+
+
+Our model predicted with and accuracy of .73 which is a good baseline with no hyperparameter tuning or further refining fo the data. The model may need to be refit looking to minimize a different loss factor depending on the goal of the user. Whether or not type I or type II error is more costly, would mean a different approach to fitting and training a model for production.
+
+
+
